@@ -1,4 +1,5 @@
 # holaspirit-mcp-server
+[![smithery badge](https://smithery.ai/badge/holaspirit-mcp-server)](https://smithery.ai/server/holaspirit-mcp-server)
 
 A [MCP(Model Context Protocol)](https://www.anthropic.com/news/model-context-protocol) server that accesses to [Holaspirit API](https://www.holaspirit.com/).
 
@@ -25,6 +26,15 @@ Available tools:
 
 ### Installation
 
+#### Installing via Smithery
+
+To install holaspirit-mcp-server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/holaspirit-mcp-server):
+
+```bash
+npx -y @smithery/cli install holaspirit-mcp-server --client claude
+```
+
+#### Installing Manually
 ```bash
 npm install holaspirit-mcp-server
 ```
