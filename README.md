@@ -34,7 +34,8 @@ To install holaspirit-mcp-server for Claude Desktop automatically via [Smithery]
 npx -y @smithery/cli install holaspirit-mcp-server --client claude
 ```
 
-#### Installing Manually
+#### Manual Installation
+
 ```bash
 npm install holaspirit-mcp-server
 ```
