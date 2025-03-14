@@ -5,6 +5,8 @@ A [MCP(Model Context Protocol)](https://www.anthropic.com/news/model-context-pro
 
 This server provides MCP-compatible access to Holaspirit's API, allowing AI assistants to interact with your Holaspirit data through a standardized interface.
 
+<a href="https://glama.ai/mcp/servers/7tn35lri9w"><img width="380" height="200" src="https://glama.ai/mcp/servers/7tn35lri9w/badge" alt="Holaspirit Server MCP server" /></a>
+
 ## Features
 
 Available tools:
@@ -33,6 +35,7 @@ npx -y @smithery/cli install holaspirit-mcp-server --client claude
 ```
 
 #### Manual Installation
+
 ```bash
 npm install holaspirit-mcp-server
 ```
