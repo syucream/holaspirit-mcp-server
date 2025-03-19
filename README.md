@@ -1,5 +1,6 @@
 # holaspirit-mcp-server
 [![smithery badge](https://smithery.ai/badge/holaspirit-mcp-server)](https://smithery.ai/server/holaspirit-mcp-server)
+[![npm version](https://badge.fury.io/js/holaspirit-mcp-server.svg)](https://badge.fury.io/js/holaspirit-mcp-server)
 
 A [MCP(Model Context Protocol)](https://www.anthropic.com/news/model-context-protocol) server that accesses to [Holaspirit API](https://www.holaspirit.com/).
 
