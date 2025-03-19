@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// リクエストスキーマ
 const BaseSchema = z.object({
   organizationId: z.string(),
 });
