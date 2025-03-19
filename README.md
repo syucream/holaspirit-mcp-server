@@ -50,19 +50,30 @@ HOLASPIRIT_API_TOKEN=your_api_token
 
 ### Usage
 
-1. Start the MCP server:
+#### Start the MCP server
+
+Directly:
 ```bash
 npx holaspirit-mcp-server
 ```
 
-2. For example usage, check the `examples` directory. To run the example:
-```bash
-# Set required environment variables
-export EXAMPLES_CLIENT_HOLASPIRIT_API_TOKEN=your_api_token
-export EXAMPLES_CLIENT_HOLASPIRIT_ORGANIZATION_ID=your_organization_id
+Or, run the installed module with node.
 
-# Run the example
-npm run examples
+#### Edit MCP configuration json for your client:
+
+```json
+...
+    "lightdash": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "holaspirit-mcp-server"
+      ],
+      "env": {
+        "HOLASPIRIT_API_TOKEN": "<your token>"
+      }
+    },
+...
 ```
 
 ## Development

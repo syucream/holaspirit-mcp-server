@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
@@ -26,7 +28,6 @@ const server = new Server(
   }
 );
 
-// APIトークンを環境変数から取得
 const apiToken = process.env.HOLASPIRIT_API_TOKEN;
 if (!apiToken) {
   throw new Error('HOLASPIRIT_API_TOKEN environment variable is required');
