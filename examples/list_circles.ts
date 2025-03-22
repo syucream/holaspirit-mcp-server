@@ -69,7 +69,7 @@ async function main() {
 
     const response = (await client.callTool(
       {
-        name: 'list_circles',
+        name: 'holaspirit_list_circles',
         arguments: {
           organizationId,
         },

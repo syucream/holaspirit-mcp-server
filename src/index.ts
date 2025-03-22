@@ -37,52 +37,52 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: 'list_tasks',
+        name: 'holaspirit_list_tasks',
         description: 'List all tasks in the organization',
         inputSchema: zodToJsonSchema(schemas.ListTasksSchema),
       },
       {
-        name: 'list_metrics',
+        name: 'holaspirit_list_metrics',
         description: 'List all metrics in the organization',
         inputSchema: zodToJsonSchema(schemas.ListMetricsSchema),
       },
       {
-        name: 'list_circles',
+        name: 'holaspirit_list_circles',
         description: 'List all circles in the organization',
         inputSchema: zodToJsonSchema(schemas.ListCirclesSchema),
       },
       {
-        name: 'get_circle',
+        name: 'holaspirit_get_circle',
         description: 'Get details of a specific circle',
         inputSchema: zodToJsonSchema(schemas.GetCircleSchema),
       },
       {
-        name: 'list_roles',
+        name: 'holaspirit_list_roles',
         description: 'List all roles in the organization',
         inputSchema: zodToJsonSchema(schemas.ListRolesSchema),
       },
       {
-        name: 'get_role',
+        name: 'holaspirit_get_role',
         description: 'Get details of a specific role',
         inputSchema: zodToJsonSchema(schemas.GetRoleSchema),
       },
       {
-        name: 'list_domains',
+        name: 'holaspirit_list_domains',
         description: 'List all domains in the organization',
         inputSchema: zodToJsonSchema(schemas.ListDomainsSchema),
       },
       {
-        name: 'list_policies',
+        name: 'holaspirit_list_policies',
         description: 'List all policies in the organization',
         inputSchema: zodToJsonSchema(schemas.ListPoliciesSchema),
       },
       {
-        name: 'list_meetings',
+        name: 'holaspirit_list_meetings',
         description: 'List all meetings in the organization',
         inputSchema: zodToJsonSchema(schemas.ListMeetingsSchema),
       },
       {
-        name: 'get_meeting',
+        name: 'holaspirit_get_meeting',
         description: 'Get details of a specific meeting',
         inputSchema: zodToJsonSchema(schemas.GetMeetingSchema),
       },
@@ -92,12 +92,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
-    if (!request.params.arguments) {
-      throw new Error('Arguments are required');
+    if (!request.params) {
+      throw new Error('Params are required');
     }
 
     switch (request.params.name) {
-      case 'list_tasks': {
+      case 'holaspirit_list_tasks': {
         const args = schemas.ListTasksSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/tasks',
@@ -114,7 +114,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_metrics': {
+      case 'holaspirit_list_metrics': {
         const args = schemas.ListMetricsSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/metrics',
@@ -131,7 +131,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_circles': {
+      case 'holaspirit_list_circles': {
         const args = schemas.ListCirclesSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles',
@@ -148,7 +148,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'get_circle': {
+      case 'holaspirit_get_circle': {
         const args = schemas.GetCircleSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles/{circle_id}',
@@ -166,7 +166,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_roles': {
+      case 'holaspirit_list_roles': {
         const args = schemas.ListRolesSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles',
@@ -183,7 +183,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'get_role': {
+      case 'holaspirit_get_role': {
         const args = schemas.GetRoleSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles/{role_id}',
@@ -201,7 +201,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_domains': {
+      case 'holaspirit_list_domains': {
         const args = schemas.ListDomainsSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/domains',
@@ -218,7 +218,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_policies': {
+      case 'holaspirit_list_policies': {
         const args = schemas.ListPoliciesSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/policies',
@@ -235,7 +235,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'list_meetings': {
+      case 'holaspirit_list_meetings': {
         const args = schemas.ListMeetingsSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings',
@@ -252,7 +252,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'get_meeting': {
+      case 'holaspirit_get_meeting': {
         const args = schemas.GetMeetingSchema.parse(request.params.arguments);
         const { data } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings/{meeting_id}',
