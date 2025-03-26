@@ -1,6 +1,6 @@
 {
   "name": "holaspirit-mcp-server",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A MCP(Model Context Protocol) server that accesses to Holaspirit API",
   "main": "dist/index.js",
   "type": "module",
@@ -42,7 +42,7 @@
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@types/node": "^20.10.3",
     "dotenv": "^16.4.7",
-    "holaspirit-client-typescript-fetch": "^0.0.1-202501130206",
+    "holaspirit-client-typescript-fetch": "^0.0.2-202503270130",
     "typescript": "^5.3.2",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.22.4"

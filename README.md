@@ -43,11 +43,7 @@ npm install holaspirit-mcp-server
 
 ### Configuration
 
-Create a `.env` file with your Holaspirit API credentials:
-
-```env
-HOLASPIRIT_API_TOKEN=your_api_token
-```
+- `HOLASPIRIT_API_TOKEN`: Your Holaspirit API token
 
 ### Usage
 
