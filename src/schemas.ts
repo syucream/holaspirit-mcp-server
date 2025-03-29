@@ -4,11 +4,15 @@ import { z } from 'zod';
 const idPattern = /^[a-zA-Z0-9-]+$/;
 const idErrorMessage = 'ID must consist of letters, numbers, and hyphens';
 
-const BaseSchema = z.object({
+const BaseRequestSchema = z.object({
   organizationId: z
     .string()
     .regex(idPattern, idErrorMessage)
     .describe('Unique identifier for the organization'),
+});
+const ListBaseRequestSchema = BaseRequestSchema.extend({
+  page: z.number().min(1).describe('Page number').optional(),
+  count: z.number().min(1).describe('Number of elements per page').optional(),
 });
 
 // NOTE it strips some redundant fields
@@ -249,26 +253,53 @@ export const TaskSchema = z.object({
   rootTask: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
 });
 
-export const ListTasksRequestSchema = BaseSchema;
-export const ListMetricsRequestSchema = BaseSchema;
-export const ListCirclesRequestSchema = BaseSchema;
-export const GetCircleRequestSchema = BaseSchema.extend({
+export const ListTasksRequestSchema = ListBaseRequestSchema;
+export const ListMetricsRequestSchema = ListBaseRequestSchema;
+export const ListCirclesRequestSchema = ListBaseRequestSchema.extend({
+  member: z
+    .string()
+    .describe('Comma-separated unique identifiers for the member')
+    .optional(),
+  circle: z
+    .string()
+    .describe('Comma-separated unique identifiers for the circle')
+    .optional(),
+});
+export const GetCircleRequestSchema = BaseRequestSchema.extend({
   circleId: z
     .string()
     .regex(idPattern, idErrorMessage)
     .describe('Unique identifier for the circle'),
 });
-export const ListRolesRequestSchema = BaseSchema;
-export const GetRoleRequestSchema = BaseSchema.extend({
+export const ListRolesRequestSchema = ListBaseRequestSchema.extend({
+  member: z
+    .string()
+    .describe('Comma-separated unique identifiers for the member')
+    .optional(),
+  circle: z
+    .string()
+    .describe('Comma-separated unique identifiers for the circle')
+    .optional(),
+});
+export const GetRoleRequestSchema = BaseRequestSchema.extend({
   roleId: z
     .string()
     .regex(idPattern, idErrorMessage)
     .describe('Unique identifier for the role'),
 });
-export const ListDomainsRequestSchema = BaseSchema;
-export const ListPoliciesRequestSchema = BaseSchema;
-export const ListMeetingsRequestSchema = BaseSchema;
-export const GetMeetingRequestSchema = BaseSchema.extend({
+export const ListDomainsRequestSchema = ListBaseRequestSchema;
+export const ListPoliciesRequestSchema = ListBaseRequestSchema;
+export const ListMeetingsRequestSchema = ListBaseRequestSchema.extend({
+  circle: z
+    .string()
+    .describe('Comma-separated unique identifiers for the circle')
+    .optional(),
+  member: z
+    .string()
+    .describe('Comma-separated unique identifiers for the member')
+    .optional(),
+});
+export const GetMeetingRequestSchema = BaseRequestSchema.extend({
   meetingId: z
     .string()
     .regex(idPattern, idErrorMessage)

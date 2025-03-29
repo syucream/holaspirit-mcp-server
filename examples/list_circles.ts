@@ -72,6 +72,8 @@ async function main() {
         name: 'holaspirit_list_circles',
         arguments: {
           organizationId,
+          page: 1,
+          count: 10,
         },
       },
       CallToolResultSchema

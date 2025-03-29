@@ -156,6 +156,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               path: {
                 organization_id: args.organizationId,
               },
+              query: {
+                member: args.member,
+                circle: args.circle,
+                page: args.page,
+                count: args.count,
+              },
             },
           }
         );
@@ -204,6 +210,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             params: {
               path: {
                 organization_id: args.organizationId,
+              },
+              query: {
+                member: args.member,
+                circle: args.circle,
+                page: args.page,
+                count: args.count,
               },
             },
           }
@@ -301,6 +313,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             params: {
               path: {
                 organization_id: args.organizationId,
+              },
+              query: {
+                circle: args.circle,
+                member: args.member,
+                page: args.page,
+                count: args.count,
               },
             },
           }
