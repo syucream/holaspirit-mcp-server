@@ -39,52 +39,52 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'holaspirit_list_tasks',
         description: 'List all tasks in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListTasksSchema),
+        inputSchema: zodToJsonSchema(schemas.ListTasksRequestSchema),
       },
       {
         name: 'holaspirit_list_metrics',
         description: 'List all metrics in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListMetricsSchema),
+        inputSchema: zodToJsonSchema(schemas.ListMetricsRequestSchema),
       },
       {
         name: 'holaspirit_list_circles',
         description: 'List all circles in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListCirclesSchema),
+        inputSchema: zodToJsonSchema(schemas.ListCirclesRequestSchema),
       },
       {
         name: 'holaspirit_get_circle',
         description: 'Get details of a specific circle',
-        inputSchema: zodToJsonSchema(schemas.GetCircleSchema),
+        inputSchema: zodToJsonSchema(schemas.GetCircleRequestSchema),
       },
       {
         name: 'holaspirit_list_roles',
         description: 'List all roles in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListRolesSchema),
+        inputSchema: zodToJsonSchema(schemas.ListRolesRequestSchema),
       },
       {
         name: 'holaspirit_get_role',
         description: 'Get details of a specific role',
-        inputSchema: zodToJsonSchema(schemas.GetRoleSchema),
+        inputSchema: zodToJsonSchema(schemas.GetRoleRequestSchema),
       },
       {
         name: 'holaspirit_list_domains',
         description: 'List all domains in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListDomainsSchema),
+        inputSchema: zodToJsonSchema(schemas.ListDomainsRequestSchema),
       },
       {
         name: 'holaspirit_list_policies',
         description: 'List all policies in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListPoliciesSchema),
+        inputSchema: zodToJsonSchema(schemas.ListPoliciesRequestSchema),
       },
       {
         name: 'holaspirit_list_meetings',
         description: 'List all meetings in the organization',
-        inputSchema: zodToJsonSchema(schemas.ListMeetingsSchema),
+        inputSchema: zodToJsonSchema(schemas.ListMeetingsRequestSchema),
       },
       {
         name: 'holaspirit_get_meeting',
         description: 'Get details of a specific meeting',
-        inputSchema: zodToJsonSchema(schemas.GetMeetingSchema),
+        inputSchema: zodToJsonSchema(schemas.GetMeetingRequestSchema),
       },
     ],
   };
@@ -98,8 +98,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     switch (request.params.name) {
       case 'holaspirit_list_tasks': {
-        const args = schemas.ListTasksSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListTasksRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/tasks',
           {
             params: {
@@ -109,14 +111,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Tasks not found or invalid response format');
+        }
+        const parsed = schemas.ListTasksResponseSchema.parse(apiResponse.data);
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_metrics': {
-        const args = schemas.ListMetricsSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListMetricsRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/metrics',
           {
             params: {
@@ -126,31 +134,53 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Metrics not found or invalid response format');
+        }
+        const parsed = schemas.ListMetricsResponseSchema.parse(
+          apiResponse.data
+        );
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_circles': {
-        const args = schemas.ListCirclesSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListCirclesRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles',
           {
             params: {
               path: {
                 organization_id: args.organizationId,
               },
+              query: {
+                member: args.member,
+                circle: args.circle,
+                page: args.page,
+                count: args.count,
+              },
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Circle not found');
+        }
+        const parsed = schemas.ListCirclesResponseSchema.parse(
+          apiResponse.data
+        );
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_get_circle': {
-        const args = schemas.GetCircleSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.GetCircleRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles/{circle_id}',
           {
             params: {
@@ -161,31 +191,54 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Circle not found');
+        }
+        const parsed = schemas.GetCircleResponseSchema.parse({
+          ...apiResponse.data,
+          linked: {
+            roles: apiResponse?.linked?.roles,
+          },
+        });
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_roles': {
-        const args = schemas.ListRolesSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListRolesRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles',
           {
             params: {
               path: {
                 organization_id: args.organizationId,
               },
+              query: {
+                member: args.member,
+                circle: args.circle,
+                page: args.page,
+                count: args.count,
+              },
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Roles not found or invalid response format');
+        }
+        const parsed = schemas.ListRolesResponseSchema.parse(apiResponse.data);
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_get_role': {
-        const args = schemas.GetRoleSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.GetRoleRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles/{role_id}',
           {
             params: {
@@ -196,14 +249,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Role not found or invalid response format');
+        }
+        const parsed = schemas.GetRoleResponseSchema.parse(apiResponse.data);
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_domains': {
-        const args = schemas.ListDomainsSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListDomainsRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/domains',
           {
             params: {
@@ -213,14 +272,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Domains not found or invalid response format');
+        }
+        const parsed = schemas.ListDomainsResponseSchema.parse(
+          apiResponse.data
+        );
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_policies': {
-        const args = schemas.ListPoliciesSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListPoliciesRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/policies',
           {
             params: {
@@ -230,31 +297,53 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Policies not found or invalid response format');
+        }
+        const parsed = schemas.ListPoliciesResponseSchema.parse(
+          apiResponse.data
+        );
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_list_meetings': {
-        const args = schemas.ListMeetingsSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.ListMeetingsRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings',
           {
             params: {
               path: {
                 organization_id: args.organizationId,
               },
+              query: {
+                circle: args.circle,
+                member: args.member,
+                page: args.page,
+                count: args.count,
+              },
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Meetings not found or invalid response format');
+        }
+        const parsed = schemas.ListMeetingsResponseSchema.parse(
+          apiResponse.data
+        );
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
       case 'holaspirit_get_meeting': {
-        const args = schemas.GetMeetingSchema.parse(request.params.arguments);
-        const { data } = await holaClient.GET(
+        const args = schemas.GetMeetingRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings/{meeting_id}',
           {
             params: {
@@ -265,8 +354,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        if (apiResponse?.data == null) {
+          throw new Error('Meeting not found or invalid response format');
+        }
+        const parsed = schemas.GetMeetingResponseSchema.parse({
+          ...apiResponse.data,
+          linked: {
+            tensions: apiResponse?.linked?.tensions,
+          },
+        });
         return {
-          content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
 
