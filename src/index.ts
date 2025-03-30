@@ -194,7 +194,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Circle not found');
         }
-        const parsed = schemas.GetCircleResponseSchema.parse(apiResponse.data);
+        const parsed = schemas.GetCircleResponseSchema.parse({
+          ...apiResponse.data,
+          linked: {
+            roles: apiResponse?.linked?.roles,
+          },
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -352,7 +357,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Meeting not found or invalid response format');
         }
-        const parsed = schemas.GetMeetingResponseSchema.parse(apiResponse.data);
+        const parsed = schemas.GetMeetingResponseSchema.parse({
+          ...apiResponse.data,
+          linked: {
+            tensions: apiResponse?.linked?.tensions,
+          },
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };

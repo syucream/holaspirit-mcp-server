@@ -164,27 +164,27 @@ export const RoleSchema = z
     domains: z.array(z.string()).nullable().optional(),
     members: z.array(z.string()).nullable().optional(),
     accountabilities: z.array(z.string()),
-    transversalRoleDomains: z.array(z.string()).nullable().optional(),
-    transversalRoleAccountabilities: z.array(z.string()).nullable().optional(),
+    // transversalRoleDomains: z.array(z.string()).nullable().optional(),
+    // transversalRoleAccountabilities: z.array(z.string()).nullable().optional(),
     assignedMembers: z.array(z.string()),
-    transversalRoleMembers: z.array(z.string()).nullable().optional(),
-    transversalRoleTargets: z.array(z.string()).nullable().optional(),
-    transversalRolePolicies: z.array(z.string()).nullable().optional(),
-    hasAssignation: z.boolean().optional(),
-    isTransversalRole: z.boolean().optional(),
+    // transversalRoleMembers: z.array(z.string()).nullable().optional(),
+    // transversalRoleTargets: z.array(z.string()).nullable().optional(),
+    // transversalRolePolicies: z.array(z.string()).nullable().optional(),
+    // hasAssignation: z.boolean().optional(),
+    // isTransversalRole: z.boolean().optional(),
     // createdAt: z.string().optional(),
     // updatedAt: z.string().optional(),
-    template: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
-    transversalRole: z
-      .string()
-      .regex(idPattern, idErrorMessage)
-      .nullable()
-      .optional(),
-    visibleSubRoles: z.array(z.string()).nullable().optional(),
-    visibleSubMembers: z.array(z.string()),
-    policies: z.array(z.string()).optional(),
-    memberFocus: z.string().nullable().optional(),
-    effortNeeded: z.number().nullable().optional(),
+    // template: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
+    // transversalRole: z
+    //   .string()
+    //   .regex(idPattern, idErrorMessage)
+    //   .nullable()
+    //   .optional(),
+    // visibleSubRoles: z.array(z.string()).nullable().optional(),
+    // visibleSubMembers: z.array(z.string()),
+    // policies: z.array(z.string()).optional(),
+    // memberFocus: z.string().nullable().optional(),
+    // effortNeeded: z.number().nullable().optional(),
     // timeSpent: z
     //   .object({
     //     totalMemberCount: z.number(),
@@ -199,8 +199,8 @@ export const RoleSchema = z
     // currentEvolutions: z.array(z.string()).optional(),
     // type: z.enum(['roles']),
     // customFields: z.record(CustomFieldValueSchema).optional(),
-    highlights: z.array(z.string()).optional(),
-    highlightsColor: z.array(z.string()).optional(),
+    // highlights: z.array(z.string()).optional(),
+    // highlightsColor: z.array(z.string()).optional(),
     // version: z.number().optional(),
   })
   .strip();
@@ -252,6 +252,115 @@ export const TaskSchema = z.object({
   externalService: z.string().nullable().optional(),
   rootTask: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
 });
+
+// NOTE it strips some redundant fields
+export const TensionSchema = z
+  .object({
+    id: z.string().regex(idPattern, idErrorMessage),
+    status: z.enum([
+      'draft',
+      'ready',
+      'attached',
+      'gog',
+      'objected',
+      'accepted',
+      'rejected',
+      'stalled',
+      'archived',
+    ]),
+    // meetingTemplate: z.string().regex(idPattern, idErrorMessage).nullable(),
+    name: z.string().nullable(),
+    // isDraft: z.boolean().nullable().optional(),
+    body: z.string().nullable(),
+    member: z.string().regex(idPattern, idErrorMessage).nullable(),
+    circle: z.string().regex(idPattern, idErrorMessage).nullable(),
+    gogStartedAt: z.string().nullable(),
+    gogEndedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    // isImported: z.boolean().optional(),
+    meeting: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
+    meetingStatus: z
+      .enum(['closed', 'processing', 'scheduled'])
+      .nullable()
+      .optional(),
+    // hasProposals: z.boolean().optional(),
+    // proposalsCount: z.number().optional(),
+    // proposals: z
+    //   .array(
+    //     z.object({
+    //       role: z.any().optional(),
+    //       circle: z.any().optional(),
+    //       policy: z.any().optional(),
+    //       publication: z.any().optional(),
+    //       copy: z.any().optional(),
+    //     })
+    //   )
+    //   .optional(),
+    // proposalsStatus: z.string().optional(),
+    // rawProposalErrors: z.record(z.array(z.string())).optional(),
+    // rawProposal: z.record(z.unknown()).nullable().optional(),
+    // clonedFromObjectedTension: z.boolean(),
+    // votes: z
+    //   .array(
+    //     z.object({
+    //       member: z.string().regex(idPattern, idErrorMessage),
+    //       status: z.string().nullable(),
+    //       votedAt: z.string().nullable(),
+    //       reason: z.string().nullable(),
+    //     })
+    //   )
+    //   .optional(),
+    // tension: z.string().regex(idPattern, idErrorMessage).nullable(),
+    // type: z.literal('tensions'),
+    // version: z.number(),
+    // tensionBehavior: z.enum(['proposal', 'note']).nullable().optional(),
+    // attachmentCount: z.number().optional(),
+    // importInMeeting: z.boolean().optional(),
+    // absolutePosition: z.number().nullable().optional(),
+    // meetingPosition: z.number().nullable().optional(),
+    // treatedAt: z.string().nullable().optional(),
+    // clone: z.string().regex(idPattern, idErrorMessage).nullable(),
+    // transferTo: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
+  })
+  .strip();
+
+// NOTE it strips some redundant fields
+export const UserSchema = z
+  .object({
+    id: z.string().regex(idPattern, idErrorMessage),
+    email: z.string().email().optional(),
+    // confirmedAt: z.string().nullable().optional(),
+    // emailConfirmedAt: z.string().nullable().optional(),
+    // pendingEmail: z.string().nullable().optional(),
+    // invitationInPending: z.boolean().optional(),
+    // lastLoginAt: z.string().nullable().optional(),
+    // lastInvitationEmailDate: z.string().nullable().optional(),
+    // invitationEmailCounter: z.number().optional(),
+    // country: z.string().nullable().optional(),
+    createdAt: z.string().optional(),
+    // updatedAt: z.string().optional(),
+    // organizations: z.array(z.string()).optional(),
+    // members: z.array(z.string()).optional(),
+    // organizationCount: z.number().optional(),
+    // settings: z.any().optional(), // UserSettings
+    // intercomInteraction: z.boolean().optional(),
+    // authenticationMethod: z.string().optional(),
+    // authenticationWorkspace: z.string().optional(),
+    workspaceFirstName: z.string().nullable().optional(),
+    workspaceLastName: z.string().nullable().optional(),
+    // type: z.literal('users'),
+    // version: z.number().optional(),
+    // intercomHash: z.string().optional(),
+    // accessibilitySettings: z
+    //   .object({
+    //     hideUnaccessibleFeatures: z.boolean().optional(),
+    //   })
+    //   .nullable()
+    //   .optional(),
+    // identityProviderId: z.string().nullable().optional(),
+  })
+  .strip();
 
 export const ListTasksRequestSchema = ListBaseRequestSchema;
 export const ListMetricsRequestSchema = ListBaseRequestSchema;
@@ -307,11 +416,23 @@ export const GetMeetingRequestSchema = BaseRequestSchema.extend({
 });
 
 export const ListCirclesResponseSchema = z.array(CircleSchema);
-export const GetCircleResponseSchema = CircleSchema;
+export const GetCircleResponseSchema = CircleSchema.extend({
+  linked: z
+    .object({
+      roles: z.array(RoleSchema).optional(),
+    })
+    .optional(),
+});
 export const ListDomainsResponseSchema = z.array(DomainSchema);
 export const ListMeetingsResponseSchema = z.array(MeetingSchema);
-export const GetMeetingResponseSchema = MeetingSchema;
-export const ListMetricsResponseSchema = z.array(MetricSchema);
+export const GetMeetingResponseSchema = MeetingSchema.extend({
+  linked: z
+    .object({
+      tensions: z.array(TensionSchema).optional(),
+    })
+    .optional(),
+});
+export const ListMetricsResponseSchema = z.array(MeetingSchema);
 export const ListPoliciesResponseSchema = z.array(PolicySchema);
 export const ListRolesResponseSchema = z.array(RoleSchema);
 export const GetRoleResponseSchema = RoleSchema;
