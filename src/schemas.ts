@@ -14,6 +14,12 @@ const ListBaseRequestSchema = BaseRequestSchema.extend({
   page: z.number().min(1).describe('Page number').optional(),
   count: z.number().min(1).describe('Number of elements per page').optional(),
 });
+const ListBaseResponseSchema = z.object({
+  pagination: z.object({
+    currentPage: z.number(),
+    pagesCount: z.number(),
+  }),
+});
 
 // NOTE it strips some redundant fields
 export const CircleSchema = z
@@ -77,26 +83,26 @@ export const MeetingSchema = z
     // createdAt: z.string(),
     // updatedAt: z.string(),
     circle: z.string().regex(idPattern, idErrorMessage).nullable(),
-    circleName: z.string().nullable(),
+    // circleName: z.string().nullable(),
     // meetingTemplate: z.string().regex(idPattern, idErrorMessage).nullable(),
-    createdBy: z.string().regex(idPattern, idErrorMessage).nullable(),
-    // scheduledAt: z.string().nullable(),
+    // createdBy: z.string().regex(idPattern, idErrorMessage).nullable(),
+    scheduledAt: z.string().nullable(),
     // duration: z.number().nullable(),
-    secretary: z.string().nullable(),
+    // secretary: z.string().nullable(),
     openedBy: z.string().nullable(),
     openedAt: z.string().nullable(),
     tensions: z.array(z.string()).optional(),
     attendees: z.array(z.string()).optional(),
     // tensionsCount: z.number(),
-    channel: z.string(),
+    // channel: z.string(),
     status: z.enum(['scheduled', 'processing', 'closed']),
-    recurrent: z.boolean().nullable(),
-    meetingRecurrence: z
-      .string()
-      .regex(idPattern, idErrorMessage)
-      .nullable()
-      .optional(),
-    evolutionOutOfMeeting: z.boolean(),
+    // recurrent: z.boolean().nullable(),
+    // meetingRecurrence: z
+    //   .string()
+    //   .regex(idPattern, idErrorMessage)
+    //   .nullable()
+    //   .optional(),
+    // evolutionOutOfMeeting: z.boolean(),
     // type: z.literal('meetings'),
     // location: z.string().nullable(),
     description: z.string().nullable(),
@@ -104,7 +110,7 @@ export const MeetingSchema = z
     // templateSettings: z.array(z.record(z.unknown())).nullable(),
     // version: z.number(),
     // private: z.boolean().optional(),
-    context: z.object({}),
+    // context: z.object({}),
     // calendarSync: z.string().nullable().optional()
   })
   .strip();
@@ -119,7 +125,7 @@ export const MetricSchema = z
     body: z.string().nullable(),
     role: z.string().regex(idPattern, idErrorMessage).optional().nullable(),
     members: z.array(z.string()).optional(),
-    recurrence: z.string().nullable(),
+    // recurrence: z.string().nullable(),
     mainLink: z.string().optional().nullable(),
     // isDraft: z.boolean().optional().nullable(),
     circle: z.string().regex(idPattern, idErrorMessage).optional().nullable(),
@@ -247,9 +253,9 @@ export const TaskSchema = z.object({
   // todoListsCount: z.number(),
   // todoListsSubtasksCount: z.number(),
   // todoListsCheckedSubtasksCount: z.number(),
-  parent: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
-  context: z.object({}),
-  externalService: z.string().nullable().optional(),
+  // parent: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
+  // context: z.object({}),
+  // externalService: z.string().nullable().optional(),
   rootTask: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
 });
 
@@ -274,16 +280,16 @@ export const TensionSchema = z
     body: z.string().nullable(),
     member: z.string().regex(idPattern, idErrorMessage).nullable(),
     circle: z.string().regex(idPattern, idErrorMessage).nullable(),
-    gogStartedAt: z.string().nullable(),
-    gogEndedAt: z.string().nullable(),
+    // gogStartedAt: z.string().nullable(),
+    // gogEndedAt: z.string().nullable(),
     createdAt: z.string(),
-    updatedAt: z.string(),
+    // updatedAt: z.string(),
     // isImported: z.boolean().optional(),
     meeting: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
-    meetingStatus: z
-      .enum(['closed', 'processing', 'scheduled'])
-      .nullable()
-      .optional(),
+    // meetingStatus: z
+    //   .enum(['closed', 'processing', 'scheduled'])
+    //   .nullable()
+    //   .optional(),
     // hasProposals: z.boolean().optional(),
     // proposalsCount: z.number().optional(),
     // proposals: z
@@ -362,6 +368,9 @@ export const UserSchema = z
   })
   .strip();
 
+/**
+ * Request Schemas
+ */
 export const ListTasksRequestSchema = ListBaseRequestSchema;
 export const ListMetricsRequestSchema = ListBaseRequestSchema;
 export const ListCirclesRequestSchema = ListBaseRequestSchema.extend({
@@ -415,7 +424,12 @@ export const GetMeetingRequestSchema = BaseRequestSchema.extend({
     .describe('Unique identifier for the meeting'),
 });
 
-export const ListCirclesResponseSchema = z.array(CircleSchema);
+/**
+ * Response Schemas
+ */
+export const ListCirclesResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(CircleSchema),
+});
 export const GetCircleResponseSchema = CircleSchema.extend({
   linked: z
     .object({
@@ -423,8 +437,12 @@ export const GetCircleResponseSchema = CircleSchema.extend({
     })
     .optional(),
 });
-export const ListDomainsResponseSchema = z.array(DomainSchema);
-export const ListMeetingsResponseSchema = z.array(MeetingSchema);
+export const ListDomainsResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(DomainSchema),
+});
+export const ListMeetingsResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(MeetingSchema),
+});
 export const GetMeetingResponseSchema = MeetingSchema.extend({
   linked: z
     .object({
@@ -432,8 +450,16 @@ export const GetMeetingResponseSchema = MeetingSchema.extend({
     })
     .optional(),
 });
-export const ListMetricsResponseSchema = z.array(MeetingSchema);
-export const ListPoliciesResponseSchema = z.array(PolicySchema);
-export const ListRolesResponseSchema = z.array(RoleSchema);
+export const ListMetricsResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(MeetingSchema),
+});
+export const ListPoliciesResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(PolicySchema),
+});
+export const ListRolesResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(RoleSchema),
+});
 export const GetRoleResponseSchema = RoleSchema;
-export const ListTasksResponseSchema = z.array(TaskSchema);
+export const ListTasksResponseSchema = ListBaseResponseSchema.extend({
+  items: z.array(TaskSchema),
+});
