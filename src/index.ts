@@ -114,7 +114,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Tasks not found or invalid response format');
         }
-        const parsed = schemas.ListTasksResponseSchema.parse(apiResponse.data);
+        const parsed = schemas.ListTasksResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -137,9 +140,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Metrics not found or invalid response format');
         }
-        const parsed = schemas.ListMetricsResponseSchema.parse(
-          apiResponse.data
-        );
+        const parsed = schemas.ListMetricsResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -165,12 +169,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           }
         );
+        apiResponse?.pagination?.pagesCount;
         if (apiResponse?.data == null) {
           throw new Error('Circle not found');
         }
-        const parsed = schemas.ListCirclesResponseSchema.parse(
-          apiResponse.data
-        );
+        const parsed = schemas.ListCirclesResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -196,6 +202,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         const parsed = schemas.GetCircleResponseSchema.parse({
           ...apiResponse.data,
+          roles: undefined, // its linked
           linked: {
             roles: apiResponse?.linked?.roles,
           },
@@ -228,7 +235,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Roles not found or invalid response format');
         }
-        const parsed = schemas.ListRolesResponseSchema.parse(apiResponse.data);
+        const parsed = schemas.ListRolesResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -275,9 +285,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Domains not found or invalid response format');
         }
-        const parsed = schemas.ListDomainsResponseSchema.parse(
-          apiResponse.data
-        );
+        const parsed = schemas.ListDomainsResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -300,9 +311,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Policies not found or invalid response format');
         }
-        const parsed = schemas.ListPoliciesResponseSchema.parse(
-          apiResponse.data
-        );
+        const parsed = schemas.ListPoliciesResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -331,9 +343,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (apiResponse?.data == null) {
           throw new Error('Meetings not found or invalid response format');
         }
-        const parsed = schemas.ListMeetingsResponseSchema.parse(
-          apiResponse.data
-        );
+        const parsed = schemas.ListMeetingsResponseSchema.parse({
+          pagination: apiResponse.pagination,
+          items: apiResponse.data,
+        });
         return {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
@@ -359,6 +372,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         const parsed = schemas.GetMeetingResponseSchema.parse({
           ...apiResponse.data,
+          tensions: undefined, // its linked
           linked: {
             tensions: apiResponse?.linked?.tensions,
           },
