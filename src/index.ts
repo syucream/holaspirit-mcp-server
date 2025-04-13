@@ -86,6 +86,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description: 'Get details of a specific meeting',
         inputSchema: zodToJsonSchema(schemas.GetMeetingRequestSchema),
       },
+      {
+        name: 'holaspirit_get_member_feed',
+        description: 'Get member feed',
+        inputSchema: zodToJsonSchema(schemas.GetMemberFeedRequestSchema),
+      },
     ],
   };
 });
@@ -381,6 +386,41 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
         };
       }
+
+      case 'holaspirit_get_member_feed':
+        {
+          const args = schemas.GetMemberFeedRequestSchema.parse(
+            request.params.arguments
+          );
+          const { data: apiResponse } = await holaClient.GET(
+            '/api/organizations/{organization_id}/members/{member_id}/feed',
+            {
+              params: {
+                path: {
+                  organization_id: args.organizationId,
+                  member_id: args.memberId,
+                },
+                query: {
+                  activityType: args.activityType,
+                  event: args.event,
+                  minTime: args.minTime,
+                  maxTime: args.maxTime,
+                  count: args.count,
+                },
+              },
+            }
+          );
+          if (apiResponse?.data == null) {
+            throw new Error('Member feed not found or invalid response format');
+          }
+          const parsed = schemas.GetMemberFeedResponseSchema.parse(
+            apiResponse.data
+          );
+          return {
+            content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
+          };
+        }
+        break;
 
       default:
         throw new Error(`Unknown tool: ${request.params.name}`);
