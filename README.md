@@ -71,7 +71,8 @@ Or, run the installed module with node.
         "holaspirit-mcp-server"
       ],
       "env": {
-        "HOLASPIRIT_API_TOKEN": "<your token>"
+        "HOLASPIRIT_API_TOKEN": "<your token>",
+        "HOLASPIRIT_ORGANIZATION_ID": "<your org id>"
       }
     },
 ...
