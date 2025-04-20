@@ -10,9 +10,27 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import * as schemas from './schemas.js';
 import { createHolaspiritClient } from 'holaspirit-client-typescript-fetch';
 
+type MeetingTensionResult = {
+  meetingId: string;
+  apiResponse?: object;
+  error?: Error;
+};
+
+const apiToken = process.env.HOLASPIRIT_API_TOKEN;
+if (!apiToken) {
+  throw new Error('HOLASPIRIT_API_TOKEN environment variable is required');
+}
+
+const organizationId = process.env.HOLASPIRIT_ORGANIZATION_ID;
+if (!organizationId) {
+  throw new Error(
+    'HOLASPIRIT_ORGANIZATION_ID environment variable is required'
+  );
+}
+
 const holaClient = createHolaspiritClient('https://app.holaspirit.com', {
   headers: {
-    Authorization: `Bearer ${process.env.HOLASPIRIT_API_TOKEN}`,
+    Authorization: `Bearer ${apiToken}`,
   },
 });
 
@@ -27,11 +45,6 @@ const server = new Server(
     },
   }
 );
-
-const apiToken = process.env.HOLASPIRIT_API_TOKEN;
-if (!apiToken) {
-  throw new Error('HOLASPIRIT_API_TOKEN environment variable is required');
-}
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -91,6 +104,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description: 'Get member feed',
         inputSchema: zodToJsonSchema(schemas.GetMemberFeedRequestSchema),
       },
+      {
+        name: 'holaspirit_get_tensions',
+        description: 'Get tensions for a meeting or meetings',
+        inputSchema: zodToJsonSchema(schemas.GetTensionsRequestSchema),
+      },
+      {
+        name: 'holaspirit_search_member',
+        description: 'Search for a member by email',
+        inputSchema: zodToJsonSchema(schemas.SearchMemberRequestSchema),
+      },
     ],
   };
 });
@@ -110,9 +133,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/tasks',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -136,9 +158,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/metrics',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -162,14 +183,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/circles',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                member: args.member,
-                circle: args.circle,
                 page: args.page,
                 count: args.count,
+                member: args.member,
+                circle: args.circle,
               },
             },
           }
@@ -196,7 +215,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 circle_id: args.circleId,
               },
             },
@@ -225,14 +244,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/roles',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                member: args.member,
-                circle: args.circle,
                 page: args.page,
                 count: args.count,
+                member: args.member,
+                circle: args.circle,
               },
             },
           }
@@ -258,7 +275,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 role_id: args.roleId,
               },
             },
@@ -281,9 +298,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/domains',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -307,9 +323,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/policies',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -333,14 +348,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/meetings',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                circle: args.circle,
-                member: args.member,
                 page: args.page,
                 count: args.count,
+                circle: args.circle,
+                member: args.member,
               },
             },
           }
@@ -366,7 +379,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 meeting_id: args.meetingId,
               },
             },
@@ -387,40 +400,145 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'holaspirit_get_member_feed':
-        {
-          const args = schemas.GetMemberFeedRequestSchema.parse(
-            request.params.arguments
-          );
+      case 'holaspirit_get_tensions': {
+        const args = schemas.GetTensionsRequestSchema.parse(
+          request.params.arguments
+        );
+        const results: MeetingTensionResult[] = await Promise.all(
+          args.meetingIds.map(
+            async (meetingId: string): Promise<MeetingTensionResult> => {
+              try {
+                const { data: apiResponse } = await holaClient.GET(
+                  '/api/organizations/{organization_id}/tensions',
+                  {
+                    params: {
+                      path: {
+                        organization_id: organizationId,
+                        meeting: meetingId,
+                      },
+                    },
+                  }
+                );
+                return { meetingId, apiResponse };
+              } catch (err) {
+                // Error handling per meetingId
+                return {
+                  meetingId,
+                  error: err instanceof Error ? err : new Error(String(err)),
+                };
+              }
+            }
+          )
+        );
+        // Separate successes and failures
+        const successes = results.filter(
+          (r): r is { meetingId: string; apiResponse: object } =>
+            !r.error && typeof r.apiResponse !== 'undefined'
+        );
+        const failures = results
+          .filter((r) => Boolean(r.error))
+          .map(({ meetingId, error }) => ({
+            meetingId,
+            error: error ? error.message : undefined,
+          }));
+        if (successes.length === 0) {
+          throw new Error('No tensions found or all requests failed');
+        }
+
+        // Flatten tensions from all responses
+        const tensions = successes.flatMap(({ meetingId, apiResponse }) => {
+          if (
+            !apiResponse ||
+            typeof apiResponse !== 'object' ||
+            !('data' in apiResponse)
+          )
+            return [];
+          const data = (apiResponse as { data?: unknown }).data;
+          // Attach meetingId to each tension for traceability
+          return (Array.isArray(data) ? data : [data]).map((tension) => ({
+            ...tension,
+            meetingId,
+          }));
+        });
+
+        const response = schemas.GetTensionsResponseSchema.parse({
+          tensions,
+          failures,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+        };
+      }
+
+      case 'holaspirit_get_member_feed': {
+        const args = schemas.GetMemberFeedRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
+          '/api/organizations/{organization_id}/members/{member_id}/feed',
+          {
+            params: {
+              path: {
+                organization_id: organizationId,
+                member_id: args.memberId,
+              },
+              query: {
+                activityType: args.activityType,
+                event: args.event,
+                minTime: args.minTime,
+                maxTime: args.maxTime,
+                count: args.count,
+              },
+            },
+          }
+        );
+        if (apiResponse?.data == null) {
+          throw new Error('Member feed not found or invalid response format');
+        }
+        const parsed = schemas.GetMemberFeedResponseSchema.parse(
+          apiResponse.data
+        );
+        return {
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
+        };
+      }
+
+      case 'holaspirit_search_member': {
+        const args = schemas.SearchMemberRequestSchema.parse(
+          request.params.arguments
+        );
+        const targetEmail = args.email.toLowerCase();
+        for (let page = 1; page <= 100; page++) {
           const { data: apiResponse } = await holaClient.GET(
-            '/api/organizations/{organization_id}/members/{member_id}/feed',
+            '/api/organizations/{organization_id}/members',
             {
               params: {
-                path: {
-                  organization_id: args.organizationId,
-                  member_id: args.memberId,
-                },
-                query: {
-                  activityType: args.activityType,
-                  event: args.event,
-                  minTime: args.minTime,
-                  maxTime: args.maxTime,
-                  count: args.count,
-                },
+                path: { organization_id: organizationId },
+                query: { page, count: 100 },
               },
             }
           );
-          if (apiResponse?.data == null) {
-            throw new Error('Member feed not found or invalid response format');
-          }
-          const parsed = schemas.GetMemberFeedResponseSchema.parse(
-            apiResponse.data
+          if (!apiResponse || !Array.isArray(apiResponse.data)) break;
+          const found = apiResponse.data?.find(
+            (m: { email?: string | null }) =>
+              m.email?.toLowerCase() === targetEmail
           );
-          return {
-            content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
-          };
+          if (found) {
+            const parsed = schemas.SearchMemberResponseSchema.parse(found);
+            return {
+              content: [
+                { type: 'text', text: JSON.stringify(parsed, null, 2) },
+              ],
+            };
+          }
+          const pag = apiResponse.pagination;
+          if (!pag || !pag.pagesCount || pag.currentPage >= pag.pagesCount)
+            break;
         }
-        break;
+        return {
+          content: [],
+        };
+      }
 
       default:
         throw new Error(`Unknown tool: ${request.params.name}`);

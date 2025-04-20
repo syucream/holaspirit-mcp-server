@@ -4,13 +4,7 @@ import { z } from 'zod';
 const idPattern = /^[a-zA-Z0-9-]+$/;
 const idErrorMessage = 'ID must consist of letters, numbers, and hyphens';
 
-const BaseRequestSchema = z.object({
-  organizationId: z
-    .string()
-    .regex(idPattern, idErrorMessage)
-    .describe('Unique identifier for the organization'),
-});
-const ListBaseRequestSchema = BaseRequestSchema.extend({
+const ListBaseRequestSchema = z.object({
   page: z.number().min(1).describe('Page number').optional(),
   count: z.number().min(1).describe('Number of elements per page').optional(),
 });
@@ -68,6 +62,16 @@ export const MeetingSchema = z
     attendees: z.array(z.string()).optional(),
     status: z.enum(['scheduled', 'processing', 'closed']),
     description: z.string().nullable(),
+  })
+  .strip();
+
+export const MemberSchema = z
+  .object({
+    id: z.string().regex(idPattern, idErrorMessage),
+    firstName: z.string().nullable().optional(),
+    lastName: z.string().nullable().optional(),
+    email: z.string().email().nullable().optional(),
+    createdAt: z.string().optional(),
   })
   .strip();
 
@@ -172,17 +176,6 @@ export const TensionSchema = z
   })
   .strip();
 
-// NOTE it strips some redundant fields
-export const UserSchema = z
-  .object({
-    id: z.string().regex(idPattern, idErrorMessage),
-    email: z.string().email().optional(),
-    createdAt: z.string().optional(),
-    workspaceFirstName: z.string().nullable().optional(),
-    workspaceLastName: z.string().nullable().optional(),
-  })
-  .strip();
-
 // Common object type for foreignId, target, origin, tension
 const FeedObjectType = z.enum([
   'attachment',
@@ -245,7 +238,7 @@ export const ListCirclesRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the circle')
     .optional(),
 });
-export const GetCircleRequestSchema = BaseRequestSchema.extend({
+export const GetCircleRequestSchema = z.object({
   circleId: z
     .string()
     .regex(idPattern, idErrorMessage)
@@ -261,7 +254,7 @@ export const ListRolesRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the circle')
     .optional(),
 });
-export const GetRoleRequestSchema = BaseRequestSchema.extend({
+export const GetRoleRequestSchema = z.object({
   roleId: z
     .string()
     .regex(idPattern, idErrorMessage)
@@ -279,78 +272,94 @@ export const ListMeetingsRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the member')
     .optional(),
 });
-export const GetMeetingRequestSchema = BaseRequestSchema.extend({
+export const GetMeetingRequestSchema = z.object({
   meetingId: z
     .string()
     .regex(idPattern, idErrorMessage)
     .describe('Unique identifier for the meeting'),
 });
-export const GetMemberFeedRequestSchema = BaseRequestSchema.extend({
-  memberId: z
+export const GetMemberFeedRequestSchema = z
+  .object({
+    memberId: z
+      .string()
+      .regex(idPattern, idErrorMessage)
+      .describe('Unique identifier for the member'),
+    activityType: z
+      .string()
+      .optional()
+      .describe(
+        'A comma separated list of: assignation|board|checklist|metric|objective|policy|publication|role|task|tension'
+      )
+      .refine(
+        (v) =>
+          v === undefined ||
+          v
+            .split(',')
+            .every((item) =>
+              [
+                'assignation',
+                'board',
+                'checklist',
+                'metric',
+                'objective',
+                'policy',
+                'publication',
+                'role',
+                'task',
+                'tension',
+              ].includes(item.trim())
+            ),
+        {
+          message: `activityType must be a comma-separated list of valid types: assignation, board, checklist, metric, objective, policy, publication, role, task, tension`,
+        }
+      ),
+    event: z
+      .enum(['assigned', 'unassigned', 'elected', 'scope'])
+      .optional()
+      .describe('Use only with activityType=assignation'),
+    minTime: z
+      .string()
+      .optional()
+      .describe('Filter elements by date (ISO 8601 format)'),
+    maxTime: z
+      .string()
+      .optional()
+      .describe(
+        'Pager: time of the last element of the previous page (ISO 8601 format)'
+      ),
+    count: z
+      .number()
+      .positive()
+      .optional()
+      .describe('Pager: number of elements per page'),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.event &&
+      (!data.activityType ||
+        !data.activityType.split(',').includes('assignation'))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'event can only be used when activityType includes "assignation"',
+        path: ['event'], // Path to the field causing the error
+      });
+    }
+  });
+
+export const GetTensionsRequestSchema = z.object({
+  meetingIds: z
+    .array(z.string().regex(idPattern, idErrorMessage))
+    .min(1)
+    .describe('List of unique meeting IDs'),
+});
+
+export const SearchMemberRequestSchema = z.object({
+  email: z
     .string()
-    .regex(idPattern, idErrorMessage)
-    .describe('Unique identifier for the member'),
-  activityType: z
-    .string()
-    .optional()
-    .describe(
-      'A comma separated list of: assignation|board|checklist|metric|objective|policy|publication|role|task|tension'
-    )
-    .refine(
-      (v) =>
-        v === undefined ||
-        v
-          .split(',')
-          .every((item) =>
-            [
-              'assignation',
-              'board',
-              'checklist',
-              'metric',
-              'objective',
-              'policy',
-              'publication',
-              'role',
-              'task',
-              'tension',
-            ].includes(item.trim())
-          ),
-      {
-        message: `activityType must be a comma-separated list of valid types: assignation, board, checklist, metric, objective, policy, publication, role, task, tension`,
-      }
-    ),
-  event: z
-    .enum(['assigned', 'unassigned', 'elected', 'scope'])
-    .optional()
-    .describe('Use only with activityType=assignation'),
-  minTime: z
-    .string()
-    .optional()
-    .describe('Filter elements by date (ISO 8601 format)'),
-  maxTime: z
-    .string()
-    .optional()
-    .describe(
-      'Pager: time of the last element of the previous page (ISO 8601 format)'
-    ),
-  count: z
-    .number()
-    .positive()
-    .optional()
-    .describe('Pager: number of elements per page'),
-}).superRefine((data, ctx) => {
-  if (
-    data.event &&
-    (!data.activityType ||
-      !data.activityType.split(',').includes('assignation'))
-  ) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message:
-        'event can only be used when activityType includes "assignation"',
-      path: ['event'], // Path to the field causing the error
-    });
-  }
+    .email()
+    .describe('Email address of the member to search for'),
 });
 
 /**
@@ -393,3 +402,15 @@ export const ListTasksResponseSchema = ListBaseResponseSchema.extend({
   items: z.array(TaskSchema),
 });
 export const GetMemberFeedResponseSchema = z.array(FeedSchema);
+
+export const GetTensionsResponseSchema = z.object({
+  tensions: z.array(TensionSchema),
+  failures: z.array(
+    z.object({
+      meetingId: z.string(),
+      error: z.string().optional(),
+    })
+  ),
+});
+
+export const SearchMemberResponseSchema = MemberSchema;
