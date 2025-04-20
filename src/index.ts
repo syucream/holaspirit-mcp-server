@@ -10,6 +10,12 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import * as schemas from './schemas.js';
 import { createHolaspiritClient } from 'holaspirit-client-typescript-fetch';
 
+type MeetingTensionResult = {
+  meetingId: string;
+  apiResponse?: object;
+  error?: Error;
+};
+
 const holaClient = createHolaspiritClient('https://app.holaspirit.com', {
   headers: {
     Authorization: `Bearer ${process.env.HOLASPIRIT_API_TOKEN}`,
@@ -90,6 +96,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: 'holaspirit_get_member_feed',
         description: 'Get member feed',
         inputSchema: zodToJsonSchema(schemas.GetMemberFeedRequestSchema),
+      },
+      {
+        name: 'holaspirit_get_tensions',
+        description: 'Get tensions for a meeting or meetings',
+        inputSchema: zodToJsonSchema(schemas.GetTensionsRequestSchema),
+      },
+      {
+        name: 'holaspirit_search_member',
+        description: 'Search for a member by email',
+        inputSchema: zodToJsonSchema(schemas.SearchMemberRequestSchema),
       },
     ],
   };
@@ -387,6 +403,76 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case 'holaspirit_get_tensions': {
+        const args = schemas.GetTensionsRequestSchema.parse(
+          request.params.arguments
+        );
+        const results: MeetingTensionResult[] = await Promise.all(
+          args.meetingIds.map(
+            async (meetingId: string): Promise<MeetingTensionResult> => {
+              try {
+                const { data: apiResponse } = await holaClient.GET(
+                  '/api/organizations/{organization_id}/tensions',
+                  {
+                    params: {
+                      path: {
+                        organization_id: args.organizationId,
+                        meeting: meetingId,
+                      },
+                    },
+                  }
+                );
+                return { meetingId, apiResponse };
+              } catch (err) {
+                // Error handling per meetingId
+                return {
+                  meetingId,
+                  error: err instanceof Error ? err : new Error(String(err)),
+                };
+              }
+            }
+          )
+        );
+        // Separate successes and failures
+        const successes = results.filter(
+          (r): r is { meetingId: string; apiResponse: object } =>
+            !r.error && typeof r.apiResponse !== 'undefined'
+        );
+        const failures = results
+          .filter((r) => Boolean(r.error))
+          .map(({ meetingId, error }) => ({
+            meetingId,
+            error: error ? error.message : undefined,
+          }));
+        if (successes.length === 0) {
+          throw new Error('No tensions found or all requests failed');
+        }
+
+        // Flatten tensions from all responses
+        const tensions = successes.flatMap(({ meetingId, apiResponse }) => {
+          if (
+            !apiResponse ||
+            typeof apiResponse !== 'object' ||
+            !('data' in apiResponse)
+          )
+            return [];
+          const data = (apiResponse as { data?: unknown }).data;
+          // Attach meetingId to each tension for traceability
+          return (Array.isArray(data) ? data : [data]).map((tension) => ({
+            ...tension,
+            meetingId,
+          }));
+        });
+
+        const response = schemas.GetTensionsResponseSchema.parse({
+          tensions,
+          failures,
+        });
+        return {
+          content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+        };
+      }
+
       case 'holaspirit_get_member_feed':
         {
           const args = schemas.GetMemberFeedRequestSchema.parse(
@@ -421,6 +507,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           };
         }
         break;
+
+      case 'holaspirit_search_member': {
+        const args = schemas.SearchMemberRequestSchema.parse(
+          request.params.arguments
+        );
+        const targetEmail = args.email.toLowerCase();
+        for (let page = 1; page <= 100; page++) {
+          const { data: apiResponse } = await holaClient.GET(
+            '/api/organizations/{organization_id}/members',
+            {
+              params: {
+                path: { organization_id: args.organizationId },
+                query: { page, count: 100 },
+              },
+            }
+          );
+          if (!apiResponse || !Array.isArray(apiResponse.data)) break;
+          const found = apiResponse.data.find(
+            (m) => m.email?.toLowerCase() === targetEmail
+          );
+          if (found) {
+            const parsed = schemas.SearchMemberResponseSchema.parse(found);
+            return {
+              content: [
+                { type: 'text', text: JSON.stringify(parsed, null, 2) },
+              ],
+            };
+          }
+          const pag = apiResponse.pagination;
+          if (!pag || !pag.pagesCount || pag.currentPage >= pag.pagesCount)
+            break;
+        }
+        return {
+          content: [],
+        };
+      }
 
       default:
         throw new Error(`Unknown tool: ${request.params.name}`);

@@ -71,6 +71,16 @@ export const MeetingSchema = z
   })
   .strip();
 
+export const MemberSchema = z
+  .object({
+    id: z.string().regex(idPattern, idErrorMessage),
+    firstName: z.string().nullable().optional(),
+    lastName: z.string().nullable().optional(),
+    email: z.string().email().nullable().optional(),
+    createdAt: z.string().optional(),
+  })
+  .strip();
+
 // NOTE it strips some redundant fields
 export const MetricSchema = z
   .object({
@@ -169,17 +179,6 @@ export const TensionSchema = z
     circle: z.string().regex(idPattern, idErrorMessage).nullable(),
     createdAt: z.string(),
     meeting: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
-  })
-  .strip();
-
-// NOTE it strips some redundant fields
-export const UserSchema = z
-  .object({
-    id: z.string().regex(idPattern, idErrorMessage),
-    email: z.string().email().optional(),
-    createdAt: z.string().optional(),
-    workspaceFirstName: z.string().nullable().optional(),
-    workspaceLastName: z.string().nullable().optional(),
   })
   .strip();
 
@@ -353,6 +352,20 @@ export const GetMemberFeedRequestSchema = BaseRequestSchema.extend({
   }
 });
 
+export const GetTensionsRequestSchema = BaseRequestSchema.extend({
+  meetingIds: z
+    .array(z.string().regex(idPattern, idErrorMessage))
+    .min(1)
+    .describe('List of unique meeting IDs'),
+});
+
+export const SearchMemberRequestSchema = BaseRequestSchema.extend({
+  email: z
+    .string()
+    .email()
+    .describe('Email address of the member to search for'),
+});
+
 /**
  * Response Schemas
  */
@@ -393,3 +406,15 @@ export const ListTasksResponseSchema = ListBaseResponseSchema.extend({
   items: z.array(TaskSchema),
 });
 export const GetMemberFeedResponseSchema = z.array(FeedSchema);
+
+export const GetTensionsResponseSchema = z.object({
+  tensions: z.array(TensionSchema),
+  failures: z.array(
+    z.object({
+      meetingId: z.string(),
+      error: z.string().optional(),
+    })
+  ),
+});
+
+export const SearchMemberResponseSchema = MemberSchema;
