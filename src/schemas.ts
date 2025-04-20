@@ -4,13 +4,7 @@ import { z } from 'zod';
 const idPattern = /^[a-zA-Z0-9-]+$/;
 const idErrorMessage = 'ID must consist of letters, numbers, and hyphens';
 
-const BaseRequestSchema = z.object({
-  organizationId: z
-    .string()
-    .regex(idPattern, idErrorMessage)
-    .describe('Unique identifier for the organization'),
-});
-const ListBaseRequestSchema = BaseRequestSchema.extend({
+const ListBaseRequestSchema = z.object({
   page: z.number().min(1).describe('Page number').optional(),
   count: z.number().min(1).describe('Number of elements per page').optional(),
 });
@@ -244,7 +238,7 @@ export const ListCirclesRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the circle')
     .optional(),
 });
-export const GetCircleRequestSchema = BaseRequestSchema.extend({
+export const GetCircleRequestSchema = z.object({
   circleId: z
     .string()
     .regex(idPattern, idErrorMessage)
@@ -260,7 +254,7 @@ export const ListRolesRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the circle')
     .optional(),
 });
-export const GetRoleRequestSchema = BaseRequestSchema.extend({
+export const GetRoleRequestSchema = z.object({
   roleId: z
     .string()
     .regex(idPattern, idErrorMessage)
@@ -278,88 +272,90 @@ export const ListMeetingsRequestSchema = ListBaseRequestSchema.extend({
     .describe('Comma-separated unique identifiers for the member')
     .optional(),
 });
-export const GetMeetingRequestSchema = BaseRequestSchema.extend({
+export const GetMeetingRequestSchema = z.object({
   meetingId: z
     .string()
     .regex(idPattern, idErrorMessage)
     .describe('Unique identifier for the meeting'),
 });
-export const GetMemberFeedRequestSchema = BaseRequestSchema.extend({
-  memberId: z
-    .string()
-    .regex(idPattern, idErrorMessage)
-    .describe('Unique identifier for the member'),
-  activityType: z
-    .string()
-    .optional()
-    .describe(
-      'A comma separated list of: assignation|board|checklist|metric|objective|policy|publication|role|task|tension'
-    )
-    .refine(
-      (v) =>
-        v === undefined ||
-        v
-          .split(',')
-          .every((item) =>
-            [
-              'assignation',
-              'board',
-              'checklist',
-              'metric',
-              'objective',
-              'policy',
-              'publication',
-              'role',
-              'task',
-              'tension',
-            ].includes(item.trim())
-          ),
-      {
-        message: `activityType must be a comma-separated list of valid types: assignation, board, checklist, metric, objective, policy, publication, role, task, tension`,
-      }
-    ),
-  event: z
-    .enum(['assigned', 'unassigned', 'elected', 'scope'])
-    .optional()
-    .describe('Use only with activityType=assignation'),
-  minTime: z
-    .string()
-    .optional()
-    .describe('Filter elements by date (ISO 8601 format)'),
-  maxTime: z
-    .string()
-    .optional()
-    .describe(
-      'Pager: time of the last element of the previous page (ISO 8601 format)'
-    ),
-  count: z
-    .number()
-    .positive()
-    .optional()
-    .describe('Pager: number of elements per page'),
-}).superRefine((data, ctx) => {
-  if (
-    data.event &&
-    (!data.activityType ||
-      !data.activityType.split(',').includes('assignation'))
-  ) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message:
-        'event can only be used when activityType includes "assignation"',
-      path: ['event'], // Path to the field causing the error
-    });
-  }
-});
+export const GetMemberFeedRequestSchema = z
+  .object({
+    memberId: z
+      .string()
+      .regex(idPattern, idErrorMessage)
+      .describe('Unique identifier for the member'),
+    activityType: z
+      .string()
+      .optional()
+      .describe(
+        'A comma separated list of: assignation|board|checklist|metric|objective|policy|publication|role|task|tension'
+      )
+      .refine(
+        (v) =>
+          v === undefined ||
+          v
+            .split(',')
+            .every((item) =>
+              [
+                'assignation',
+                'board',
+                'checklist',
+                'metric',
+                'objective',
+                'policy',
+                'publication',
+                'role',
+                'task',
+                'tension',
+              ].includes(item.trim())
+            ),
+        {
+          message: `activityType must be a comma-separated list of valid types: assignation, board, checklist, metric, objective, policy, publication, role, task, tension`,
+        }
+      ),
+    event: z
+      .enum(['assigned', 'unassigned', 'elected', 'scope'])
+      .optional()
+      .describe('Use only with activityType=assignation'),
+    minTime: z
+      .string()
+      .optional()
+      .describe('Filter elements by date (ISO 8601 format)'),
+    maxTime: z
+      .string()
+      .optional()
+      .describe(
+        'Pager: time of the last element of the previous page (ISO 8601 format)'
+      ),
+    count: z
+      .number()
+      .positive()
+      .optional()
+      .describe('Pager: number of elements per page'),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      data.event &&
+      (!data.activityType ||
+        !data.activityType.split(',').includes('assignation'))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'event can only be used when activityType includes "assignation"',
+        path: ['event'], // Path to the field causing the error
+      });
+    }
+  });
 
-export const GetTensionsRequestSchema = BaseRequestSchema.extend({
+export const GetTensionsRequestSchema = z.object({
   meetingIds: z
     .array(z.string().regex(idPattern, idErrorMessage))
     .min(1)
     .describe('List of unique meeting IDs'),
 });
 
-export const SearchMemberRequestSchema = BaseRequestSchema.extend({
+export const SearchMemberRequestSchema = z.object({
   email: z
     .string()
     .email()

@@ -15,15 +15,17 @@ config();
 
 // Get and validate required environment variables
 const apiToken = process.env.EXAMPLES_CLIENT_HOLASPIRIT_API_TOKEN;
-if (!apiToken) {
+const organizationId = process.env.EXAMPLES_CLIENT_HOLASPIRIT_ORGANIZATION_ID;
+if (!apiToken || !organizationId) {
   throw new Error(
-    'EXAMPLES_CLIENT_HOLASPIRIT_API_TOKEN environment variable is required'
+    'EXAMPLES_CLIENT_HOLASPIRIT_API_TOKEN and EXAMPLES_CLIENT_HOLASPIRIT_ORGANIZATION_ID environment variables are required'
   );
 }
 
-// After validation, we can safely assert these are strings
+// Compose env for child process
 const env = {
   HOLASPIRIT_API_TOKEN: apiToken,
+  HOLASPIRIT_ORGANIZATION_ID: organizationId,
 } as const satisfies Record<string, string>;
 
 async function main() {
@@ -59,19 +61,10 @@ async function main() {
     console.log('Available tools:', toolsResponse.tools);
 
     // Call list_circles with an organization ID
-    const organizationId =
-      process.env.EXAMPLES_CLIENT_HOLASPIRIT_ORGANIZATION_ID;
-    if (!organizationId) {
-      throw new Error(
-        'EXAMPLES_CLIENT_HOLASPIRIT_ORGANIZATION_ID environment variable is required'
-      );
-    }
-
     const response = (await client.callTool(
       {
         name: 'holaspirit_list_circles',
         arguments: {
-          organizationId,
           page: 1,
           count: 10,
         },

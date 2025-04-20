@@ -16,9 +16,21 @@ type MeetingTensionResult = {
   error?: Error;
 };
 
+const apiToken = process.env.HOLASPIRIT_API_TOKEN;
+if (!apiToken) {
+  throw new Error('HOLASPIRIT_API_TOKEN environment variable is required');
+}
+
+const organizationId = process.env.HOLASPIRIT_ORGANIZATION_ID;
+if (!organizationId) {
+  throw new Error(
+    'HOLASPIRIT_ORGANIZATION_ID environment variable is required'
+  );
+}
+
 const holaClient = createHolaspiritClient('https://app.holaspirit.com', {
   headers: {
-    Authorization: `Bearer ${process.env.HOLASPIRIT_API_TOKEN}`,
+    Authorization: `Bearer ${apiToken}`,
   },
 });
 
@@ -33,11 +45,6 @@ const server = new Server(
     },
   }
 );
-
-const apiToken = process.env.HOLASPIRIT_API_TOKEN;
-if (!apiToken) {
-  throw new Error('HOLASPIRIT_API_TOKEN environment variable is required');
-}
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -126,9 +133,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/tasks',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -152,9 +158,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/metrics',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -178,14 +183,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/circles',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                member: args.member,
-                circle: args.circle,
                 page: args.page,
                 count: args.count,
+                member: args.member,
+                circle: args.circle,
               },
             },
           }
@@ -212,7 +215,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 circle_id: args.circleId,
               },
             },
@@ -241,14 +244,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/roles',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                member: args.member,
-                circle: args.circle,
                 page: args.page,
                 count: args.count,
+                member: args.member,
+                circle: args.circle,
               },
             },
           }
@@ -274,7 +275,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 role_id: args.roleId,
               },
             },
@@ -297,9 +298,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/domains',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -323,9 +323,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/policies',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
+              query: { page: args.page, count: args.count },
             },
           }
         );
@@ -349,14 +348,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           '/api/organizations/{organization_id}/meetings',
           {
             params: {
-              path: {
-                organization_id: args.organizationId,
-              },
+              path: { organization_id: organizationId },
               query: {
-                circle: args.circle,
-                member: args.member,
                 page: args.page,
                 count: args.count,
+                circle: args.circle,
+                member: args.member,
               },
             },
           }
@@ -382,7 +379,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           {
             params: {
               path: {
-                organization_id: args.organizationId,
+                organization_id: organizationId,
                 meeting_id: args.meetingId,
               },
             },
@@ -416,7 +413,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   {
                     params: {
                       path: {
-                        organization_id: args.organizationId,
+                        organization_id: organizationId,
                         meeting: meetingId,
                       },
                     },
@@ -473,40 +470,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case 'holaspirit_get_member_feed':
-        {
-          const args = schemas.GetMemberFeedRequestSchema.parse(
-            request.params.arguments
-          );
-          const { data: apiResponse } = await holaClient.GET(
-            '/api/organizations/{organization_id}/members/{member_id}/feed',
-            {
-              params: {
-                path: {
-                  organization_id: args.organizationId,
-                  member_id: args.memberId,
-                },
-                query: {
-                  activityType: args.activityType,
-                  event: args.event,
-                  minTime: args.minTime,
-                  maxTime: args.maxTime,
-                  count: args.count,
-                },
+      case 'holaspirit_get_member_feed': {
+        const args = schemas.GetMemberFeedRequestSchema.parse(
+          request.params.arguments
+        );
+        const { data: apiResponse } = await holaClient.GET(
+          '/api/organizations/{organization_id}/members/{member_id}/feed',
+          {
+            params: {
+              path: {
+                organization_id: organizationId,
+                member_id: args.memberId,
               },
-            }
-          );
-          if (apiResponse?.data == null) {
-            throw new Error('Member feed not found or invalid response format');
+              query: {
+                activityType: args.activityType,
+                event: args.event,
+                minTime: args.minTime,
+                maxTime: args.maxTime,
+                count: args.count,
+              },
+            },
           }
-          const parsed = schemas.GetMemberFeedResponseSchema.parse(
-            apiResponse.data
-          );
-          return {
-            content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
-          };
+        );
+        if (apiResponse?.data == null) {
+          throw new Error('Member feed not found or invalid response format');
         }
-        break;
+        const parsed = schemas.GetMemberFeedResponseSchema.parse(
+          apiResponse.data
+        );
+        return {
+          content: [{ type: 'text', text: JSON.stringify(parsed, null, 2) }],
+        };
+      }
 
       case 'holaspirit_search_member': {
         const args = schemas.SearchMemberRequestSchema.parse(
@@ -518,14 +513,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             '/api/organizations/{organization_id}/members',
             {
               params: {
-                path: { organization_id: args.organizationId },
+                path: { organization_id: organizationId },
                 query: { page, count: 100 },
               },
             }
           );
           if (!apiResponse || !Array.isArray(apiResponse.data)) break;
-          const found = apiResponse.data.find(
-            (m) => m.email?.toLowerCase() === targetEmail
+          const found = apiResponse.data?.find(
+            (m: { email?: string | null }) =>
+              m.email?.toLowerCase() === targetEmail
           );
           if (found) {
             const parsed = schemas.SearchMemberResponseSchema.parse(found);
