@@ -12,16 +12,19 @@ This server provides MCP-compatible access to Holaspirit's API, allowing AI assi
 
 Available tools:
 
-- `list_tasks` - List all tasks in the organization
-- `list_metrics` - List all metrics in the organization
-- `list_circles` - List all circles in the organization
-- `get_circle` - Get details of a specific circle
-- `list_roles` - List all roles in the organization
-- `get_role` - Get details of a specific role
-- `list_domains` - List all domains in the organization
-- `list_policies` - List all policies in the organization
-- `list_meetings` - List all meetings in the organization
-- `get_meeting` - Get details of a specific meeting
+- `holaspirit_list_tasks` - List all tasks in the organization
+- `holaspirit_list_metrics` - List all metrics in the organization
+- `holaspirit_list_circles` - List all circles in the organization
+- `holaspirit_get_circle` - Get details of a specific circle
+- `holaspirit_list_roles` - List all roles in the organization
+- `holaspirit_get_role` - Get details of a specific role
+- `holaspirit_list_domains` - List all domains in the organization
+- `holaspirit_list_policies` - List all policies in the organization
+- `holaspirit_list_meetings` - List all meetings in the organization
+- `holaspirit_get_meeting` - Get details of a specific meeting
+- `holaspirit_get_member_feed` - Get member feed
+- `holaspirit_get_tensions` - Get tensions for a meeting or meetings
+- `holaspirit_search_member` - Search for a member by email
 
 ## Quick Start
 
@@ -44,6 +47,7 @@ npm install holaspirit-mcp-server
 ### Configuration
 
 - `HOLASPIRIT_API_TOKEN`: Your Holaspirit API token
+- `HOLASPIRIT_ORGANIZATION_ID`: Your Holaspirit organization ID
 
 ### Usage
 
