@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/syucream-holaspirit-mcp-server-badge.png)](https://mseep.ai/app/syucream-holaspirit-mcp-server)
+
 # holaspirit-mcp-server
 [![smithery badge](https://smithery.ai/badge/holaspirit-mcp-server)](https://smithery.ai/server/holaspirit-mcp-server)
 [![npm version](https://badge.fury.io/js/holaspirit-mcp-server.svg)](https://badge.fury.io/js/holaspirit-mcp-server)
