@@ -124,11 +124,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       throw new Error('Params are required');
     }
 
+    const requestArgs = request.params.arguments ?? {};
+
     switch (request.params.name) {
       case 'holaspirit_list_tasks': {
-        const args = schemas.ListTasksRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListTasksRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/tasks',
           {
@@ -151,9 +151,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_metrics': {
-        const args = schemas.ListMetricsRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListMetricsRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/metrics',
           {
@@ -176,9 +174,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_circles': {
-        const args = schemas.ListCirclesRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListCirclesRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles',
           {
@@ -207,9 +203,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_get_circle': {
-        const args = schemas.GetCircleRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.GetCircleRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/circles/{circle_id}',
           {
@@ -237,9 +231,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_roles': {
-        const args = schemas.ListRolesRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListRolesRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles',
           {
@@ -267,9 +259,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_get_role': {
-        const args = schemas.GetRoleRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.GetRoleRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/roles/{role_id}',
           {
@@ -291,9 +281,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_domains': {
-        const args = schemas.ListDomainsRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListDomainsRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/domains',
           {
@@ -316,9 +304,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_policies': {
-        const args = schemas.ListPoliciesRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListPoliciesRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/policies',
           {
@@ -341,9 +327,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_list_meetings': {
-        const args = schemas.ListMeetingsRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.ListMeetingsRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings',
           {
@@ -371,9 +355,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_get_meeting': {
-        const args = schemas.GetMeetingRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.GetMeetingRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/meetings/{meeting_id}',
           {
@@ -401,9 +383,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_get_tensions': {
-        const args = schemas.GetTensionsRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.GetTensionsRequestSchema.parse(requestArgs);
         const results: MeetingTensionResult[] = await Promise.all(
           args.meetingIds.map(
             async (meetingId: string): Promise<MeetingTensionResult> => {
@@ -471,9 +451,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_get_member_feed': {
-        const args = schemas.GetMemberFeedRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.GetMemberFeedRequestSchema.parse(requestArgs);
         const { data: apiResponse } = await holaClient.GET(
           '/api/organizations/{organization_id}/members/{member_id}/feed',
           {
@@ -504,9 +482,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'holaspirit_search_member': {
-        const args = schemas.SearchMemberRequestSchema.parse(
-          request.params.arguments
-        );
+        const args = schemas.SearchMemberRequestSchema.parse(requestArgs);
         const targetEmail = args.email.toLowerCase();
         for (let page = 1; page <= 100; page++) {
           const { data: apiResponse } = await holaClient.GET(

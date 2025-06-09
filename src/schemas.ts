@@ -116,8 +116,8 @@ export const RoleSchema = z
     circle: z.string().regex(idPattern, idErrorMessage).nullable().optional(),
     domains: z.array(z.string()).nullable().optional(),
     members: z.array(z.string()).nullable().optional(),
-    accountabilities: z.array(z.string()),
-    assignedMembers: z.array(z.string()),
+    accountabilities: z.array(z.string()).optional(),
+    assignedMembers: z.array(z.string()).optional(),
   })
   .strip();
 
