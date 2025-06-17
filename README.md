@@ -51,20 +51,30 @@ npm install holaspirit-mcp-server
 
 ### Usage
 
-#### Start the MCP server
+The server supports two transport modes:
 
-Directly:
+#### Stdio Transport (Default)
+
+For use with MCP clients that communicate via stdin/stdout:
 ```bash
 npx holaspirit-mcp-server
 ```
 
-Or, run the installed module with node.
+#### HTTP Transport
+
+For use with web clients or HTTP-based integrations using the latest Streamable HTTP protocol:
+```bash
+npx holaspirit-mcp-server --port 3000
+```
+
+The HTTP server accepts POST requests only on any path (e.g., `/`, `/mcp`, `/sse`) and uses the Streamable HTTP transport protocol.
 
 #### Edit MCP configuration json for your client:
 
+For stdio transport:
 ```json
 ...
-    "lightdash": {
+    "holaspirit": {
       "command": "npx",
       "args": [
         "-y",
@@ -77,6 +87,9 @@ Or, run the installed module with node.
     },
 ...
 ```
+
+For HTTP transport, configure your client to connect to:
+- `http://localhost:3000/` (or any path)
 
 ## Development
 
