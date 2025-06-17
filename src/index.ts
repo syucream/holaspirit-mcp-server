@@ -6,15 +6,36 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import * as schemas from './schemas.js';
 import { createHolaspiritClient } from 'holaspirit-client-typescript-fetch';
+import { createServer } from 'node:http';
+import { randomUUID } from 'node:crypto';
 
 type MeetingTensionResult = {
   meetingId: string;
   apiResponse?: object;
   error?: Error;
 };
+
+// Parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const portIndex = Math.max(args.indexOf('--port'), args.indexOf('-port'));
+
+  if (portIndex !== -1 && portIndex + 1 < args.length) {
+    const port = parseInt(args[portIndex + 1], 10);
+    if (isNaN(port)) {
+      throw new Error('Invalid port number provided');
+    }
+    return { transport: 'http' as const, port };
+  }
+
+  return { transport: 'stdio' as const };
+}
+
+const config = parseArgs();
 
 const apiToken = process.env.HOLASPIRIT_API_TOKEN;
 if (!apiToken) {
@@ -528,9 +549,50 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Holaspirit MCP Server running on stdio');
+  if (config.transport === 'http') {
+    // Use StreamableHTTPServerTransport
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+    });
+
+    await server.connect(transport);
+
+    // Create HTTP server for Streamable HTTP transport
+    const httpServer = createServer((req, res) => {
+      // Only allow POST method for simplicity
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        return;
+      }
+
+      // Parse request body for POST requests
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        try {
+          const parsedBody = body ? JSON.parse(body) : undefined;
+          transport.handleRequest(req, res, parsedBody).catch(console.error);
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+    });
+
+    httpServer.listen(config.port, () => {
+      console.error(
+        `Holaspirit MCP Server running on HTTP port ${config.port}`
+      );
+      console.error(`Connect to: http://localhost:${config.port}/`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error('Holaspirit MCP Server running on stdio');
+  }
 }
 
 runServer().catch((error) => {
