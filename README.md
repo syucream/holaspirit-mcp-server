@@ -46,8 +46,28 @@ npm install holaspirit-mcp-server
 
 ### Configuration
 
+You can configure the server using environment variables. Two methods are supported:
+
+#### Environment Variables
+
 - `HOLASPIRIT_API_TOKEN`: Your Holaspirit API token
 - `HOLASPIRIT_ORGANIZATION_ID`: Your Holaspirit organization ID
+
+#### Using .env File
+
+Create a `.env` file in the project root:
+
+```bash
+# Copy the example file
+cp .env.example .env
+```
+
+Then edit `.env` with your actual values:
+
+```bash
+HOLASPIRIT_API_TOKEN=your_api_token_here
+HOLASPIRIT_ORGANIZATION_ID=your_organization_id_here
+```
 
 ### Usage
 
